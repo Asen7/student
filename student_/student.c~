@@ -1,0 +1,165 @@
+#include"student.h"
+#include"change.h"
+#include"main_s.h"
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<getch.h>
+
+struct Student stu[1000],stu2[1000],s,s1;
+static FILE *fp=NULL;
+
+/*void init_s(void)
+{
+	FILE *fp=fopen("student.txt","r");
+	if(fp==NULL)
+	{
+		puts("数据路径错误!");
+		sleep(2);
+		return;
+	}
+	while(fscanf(fp,"%d %s %c %d %d %d %s %c",&s.id,s.name,&s.sex,&s.g_chinese,&s.g_math,&s.g_english,s.code,&s.count)!=EOF)
+	{
+		id=s.id%2019;
+		stu[id]=s;
+	}
+	passin_s();
+}*/
+void passin_s(void)
+{
+	int i=0;
+	char c,code[20]="123456";
+	fp=fopen("student.txt","r+");
+	if(fp==NULL)
+	{
+		puts("学生信息数据路径错误!");
+		puts("---------------------");
+		any();
+		return;
+	}
+		system("clear");
+		printf("学生模式\n");
+		puts("---------------------");
+		printf("请输入学号:\n");	
+		scanf("%d%c",&s.id,&c);
+//		printf("%d %d",s1.id,s.id);
+		printf("请输入密码:\n");
+		scanf("%s%c",s.code,&c);
+//		printf("%d %d",s1.id,s.id);
+		puts("---------------------");
+		i=s.id%2019-1;
+		s1.id=s.id-1;
+//		printf("%d %d",s1.id,s.id);
+		while(i-->=0 && s1.id!=s.id)
+		{
+
+			fread(&s1,sizeof(s1),1,fp);
+//			printf("%d %d",s1.id,s.id);
+//			printf("%c",s1.sex);
+		}
+		if(s1.sex==0 || s.id!=s1.id)
+		{
+			printf("无效学号!请重输!\n");
+			puts("---------------------");
+//			rewind(fp);
+			any();
+			return;
+		}
+		fseek(fp,-1*sizeof(s1),SEEK_CUR);//文件结构指针回退一个结构体长度，为后续做准备
+		if(s1.count==3)
+		{
+			printf("账户锁定,请联系教师!\n");
+			puts("---------------------");
+			any();
+			return;
+		}
+		if(!strcmp(s.code,s1.code))
+		{
+			if(!strcmp(s.code,code))
+			{
+				puts("首次登录请重置密码!");
+				puts("---------------------");
+				first(s1.code);//初次登录改密码
+			}
+			s1.count=0;
+			fwrite(&s1,sizeof(s1),1,fp);
+			fseek(fp,-1*sizeof(s1),SEEK_CUR);
+			main_s();
+		}
+		else
+		{
+			puts("密码错误!");
+			puts("---------------------");
+			any();
+			s1.count++;
+			fwrite(&s1,sizeof(s1),1,fp);
+			fseek(fp,-1*sizeof(s1),SEEK_CUR);
+		}
+	fclose(fp);
+	return;
+}
+//查询成绩
+void find_grade(void)
+{
+	int max=s1.g_chinese,min=s1.g_chinese;
+	float mun=1.0*(s1.g_chinese+s1.g_math+s1.g_english)/3;
+	if(max<s1.g_math)
+	{
+		max=s1.g_math;
+	}
+	else if(min>s1.g_math)
+	{
+		min=s1.g_math;
+	}
+	if(max<s1.g_english)
+	{
+		max=s1.g_english;
+	}
+	else if(min>s1.g_english)
+	
+	{
+		min=s1.g_english;
+	}
+	system("clear");
+	printf("学生模式|欢迎 %s !\n",s1.name);
+	puts("--------------------------------------------");
+	printf("排名:%3d 最高分:%3d 最低分:%3d 平均分: %.2f\n",s1.rank,max,min,mun);
+	puts("--------------------------------------------");
+	any();
+	return;
+}
+//修改密码
+void change_s(void)
+{
+	system("clear");
+	printf("学生模式|欢迎 %s !\n",s1.name);
+	puts("-------------------------");
+	change_pass(s1.code);
+	fwrite(&s1,sizeof(s1),1,fp);
+	fseek(fp,-1*sizeof(s1),SEEK_CUR);
+}
+//查看个人信息
+void show_infor(void)
+{
+	system("clear");
+	printf("学生模式|欢迎 %s !\n",s1.name);
+	puts("------------------------");
+	printf("姓名: %s\n性别: %s\n学号: %d\n语文: %d\n数学: %d\n英语: %d\n排名: %d\n",s1.name,s1.sex=='w'? "女":"男",s1.id,s1.g_chinese,s1.g_math,s1.g_english,s1.rank);
+	puts("------------------------");
+	any();
+	return;
+}
+char menu_s(void)
+{
+	system("clear");
+	printf("学生模式|欢迎 %s !\n",s1.name);
+	puts("------------------------");
+	puts("1、查询成绩");
+	puts("2、修改密码");
+	puts("3、查看个人信息");
+	puts("4、退出系统");
+	puts("------------------------");
+	printf("请输入指令:");
+	char cmd=getch();
+	return cmd;
+}
